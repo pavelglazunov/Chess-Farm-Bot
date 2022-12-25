@@ -10,10 +10,12 @@ from chessProcessing import get_step, next_step, set_first_step_black, first_mov
     get_move
 from phoneTools import make_move, change_color, get_active_color, get_cords
 
-move_count = 0  # счетчик ходов
-time_coefficient = 6  # коэффициент для случайной задержки по времени
+from settings import *
 
-now_play = "b"  # p or b - активный игрок (p - реальный игрок, b - бот)
+move_count = 0  # счетчик ходов
+time_coefficient = START_TIME_COEFFICIENT  # коэффициент для случайной задержки по времени
+
+now_play = "p"  # p or b - активный игрок (p - реальный игрок, b - бот)
 
 
 def beautiful_log(mc, ls, ns) -> None:
@@ -95,21 +97,13 @@ def main():
 
         # Обрезание скриншота в зависимости от оппонента
         if now_play == "p":
-            img = crop_image(img, 0, 711, 1080, 1080)
+            img = crop_image(img, BOARD_RIGHT["p"], BOARD_TOP["p"], BOARD_SIZE, BOARD_SIZE)
         else:
-            img = crop_image(img, 0, 710, 1080, 1080)
+            img = crop_image(img, BOARD_RIGHT["b"], BOARD_TOP["b"], BOARD_SIZE, BOARD_SIZE)
 
         active_board = get_board_matrix(img)  # получение матрицы игрового поля из скриншота
 
-        for i in active_board:
-            print(*i, "|")
-        print(f'{"-" * 15} +')
-
         last_step = get_step(active_board)  # определение хода, который сделал соперник
-
-        # print(last_step)
-
-        # sys.exit()
 
         # Если соперник не ходил пропуск цикла
         if not last_step:
@@ -118,23 +112,29 @@ def main():
 
         new_step = next_step(last_step)  # запись хода соперника в движок, получение лучшего хода
 
+        if new_step == "mate":
+            return
+
         make_move(new_step)  # вывод хода на телефон
 
-        # beautiful_log(mc=move_count, ls=last_step, ns=new_step)  # логирование последних событий
+        if SAVE_LOG:
+            beautiful_log(mc=move_count, ls=last_step, ns=new_step)  # логирование последних событий
 
         move_count += 1
 
 
-# try:
-if __name__ == '__main__':
-    # file = open(f"logs/logs.txt", mode="a+")
-    # file.write("========== " + str(datetime.now()) + " ==========" + "\n")
+try:
+    if __name__ == '__main__':
+        if SAVE_LOG:
+            file = open(f"logs/logs.txt", mode="a+")
+            file.write("========== " + str(datetime.now()) + " ==========" + "\n")
 
-    start()
-    main()
+        start()
+        main()
 
     # file.close()
-# except Exception as e:
-#     print(f"Finish with error: {e}")
-#     file.write(f"ERROR: {e}")
-#     file.close()
+except Exception as e:
+    print(f"Finish with error: {e}")
+    if SAVE_LOG:
+        file.write(f"ERROR: {e}")
+        file.close()

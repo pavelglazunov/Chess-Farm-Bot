@@ -1,11 +1,17 @@
+import sys
+
 from stockfish import Stockfish
 from phoneTools import get_active_color
 
-depth = 18  # глубина анализа движка
+from settings import DEPTH, ELO_RATING, SKILL_LEVEL, STOCKFISH_FILENAME
+
+depth = DEPTH  # глубина анализа движка
 
 # подключение движка
-stockfish = Stockfish('stockfish')
+stockfish = Stockfish(STOCKFISH_FILENAME)
 stockfish.set_depth(depth)
+stockfish.set_elo_rating(ELO_RATING)
+stockfish.set_skill_level(SKILL_LEVEL)
 
 
 # Актуальная глубина
@@ -94,9 +100,6 @@ def get_step(new_matrix) -> str:
 
     if len(steps) == 1:
         return ""
-        # print(old_matrix)
-        # print(steps, "?")
-        # print(new_matrix)
         # raise ValueError("НАЙДЕН ТОЛЬКО ОДИН ХОД, СУУКА")
 
     if len(steps) == 2:
@@ -104,13 +107,10 @@ def get_step(new_matrix) -> str:
         return f"{start_pos}{end_pos}"
 
     if len(steps) == 3:
-        print(old_matrix)
-        print(steps)
-        print(new_matrix)
+        print("А Я ГОВОРИЛ")
         return ""
 
     # Обработка рокировок
-    print(steps)
     if get_active_color() == 0:
         if steps == ['a8', 'c8', 'd8', 'e8']:
             old_matrix = new_matrix
@@ -126,31 +126,6 @@ def get_step(new_matrix) -> str:
         if steps == ['e1', 'f1', 'g1', 'h1']:
             old_matrix = new_matrix
             return "e1c1"
-    # for step in steps:
-    #     # if get_active_color() == 1:
-    #         # if step[1] == "1":
-    #
-    #     if step[0] == "g":
-    #         old_matrix = new_matrix
-    #         if get_active_color() == 0 and step[1] == "1":
-    #             return "e1g1"
-    #         if get_active_color() == 0 and step[1] == "8":
-    #             return "e8g8"
-    #         if get_active_color() == 1 and step[1] == "1":
-    #             return "e1g1"
-    #         if get_active_color() == 1 and step[1] == "8":
-    #             return "e8c8"
-    #
-    #     if step[0] == "c":
-    #         old_matrix = new_matrix
-    #         if get_active_color() == 0 and step[1] == "1":  #
-    #             return "e1c1"
-    #         if get_active_color() == 0 and step[1] == "8":
-    #             return "e8c8"
-    #         if get_active_color() == 1 and step[1] == "1":
-    #             return "e1g1"
-    #         if get_active_color() == 1 and step[1] == "8":
-    #             return "e8g8"
 
     return ""
 
@@ -171,6 +146,10 @@ def next_step(step: str) -> str:
     stockfish.set_position(moves)
 
     best_step = stockfish.get_best_move()
+
+    if not best_step:
+        return "mate"
+
     moves.append(best_step)
     stockfish.set_position(moves)
 
@@ -184,20 +163,25 @@ def change_old_matrix(step: str) -> None:
 
     # Рокировки
     if get_active_color() == 0:
+        print(step)
         if step == "e1g1":
             old_matrix[7][4], old_matrix[7][7] = " ", " "
             old_matrix[7][6], old_matrix[7][5] = "K", "R"
+            return
 
         if step == "e1c1":
             old_matrix[7][0], old_matrix[7][4] = " ", " "
             old_matrix[7][2], old_matrix[7][3] = "K", "R"
+            return
     else:
         if step == "e8g8":
             old_matrix[7][0], old_matrix[7][3] = " ", " "
             old_matrix[7][1], old_matrix[7][2] = "k", "r"
+            return
         if step == "e8c8":
             old_matrix[7][3], old_matrix[7][7] = " ", " "
             old_matrix[7][4], old_matrix[7][5] = "r", "k"
+            return
     # if step == "e1g1":
     #     old_matrix[7][4], old_matrix[7][7] = " ", " "
     #     old_matrix[7][5], old_matrix[7][6] = "R", "K"

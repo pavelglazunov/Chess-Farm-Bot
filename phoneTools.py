@@ -1,6 +1,8 @@
 import time
 import os
 
+from settings import BOARD_SIZE
+
 click_cords = []
 
 active_color = 0  # 0 - white | 1 - black
@@ -24,7 +26,7 @@ def change_color(color: str) -> None:
 
 def make_move(step: str):
     """Определение координат, куда нужно нажать по ходу"""
-    cell = 135
+    cell = BOARD_SIZE / 8
 
     # Рокировки
     if step == "0-0":
